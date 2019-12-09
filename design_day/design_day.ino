@@ -104,49 +104,51 @@ void doSwitchStatement() {                                  //Sets up the switch
 void doRun(){
       do {                                                      //Runs the RPM loop 10,000 times, unless the button is pressed
           val = analogRead(potPin);                             
-          
-          pos = map(val, 0, 1023, 0, 255);                      //
+          Serial.print(val);                                    //TODO: Use this to check for fluxuations in readings that could be causing the jumping of the actuator
+          pos = map(val, 0, 1023, 150, 27);                      //
           unsigned char buf[8] = {pos,0,0,0,0,0,0,0};
           CAN.sendMsgBuf(0x520, 0, 8, buf);
           
           lcd.setCursor(0,0);
           lcd.print("RPM: ");
-          float  RPM_Test = map(pos, 0, 255, 15350, 0);
+          float  RPM_Test = map(pos, 27, 150, 0, 15350);
           lcd.print(RPM_Test);
           
           lcd.setCursor(0,3);
-          float len = map(val, 0, 1023, 0.000, 5.000);
+          //int len = map(val, 0, 1023, 0, 500);
+          //float len_true = len/100;
+          float inch = 6.625-0.000425*raw*100;
+          int inch_int = inch;        // Relationship between RPM and length
+          digi_inch = map(inch_int, 4.0705, 1.1000, 475, 0);
+          
           lcd.print("Length: ");
-          lcd.print(len);
+          lcd.print(len_true);
       } while (digitalRead(btn) == HIGH);
-  return;
 }
 
 void doExtend(){
   do{
-  unsigned char buf[8] = {255,0,0,0,0,0,0,0};
+  unsigned char buf[8] = {27,0,0,0,0,0,0,0};
   Serial.print(buf[0]);
   CAN.sendMsgBuf(0x520, 0, 8, buf);
   lcd.setCursor(0,3);
   lcd.print("Length: 5in    ");
   } while (digitalRead(btn) == HIGH);
-  return;
 }
 
 void doContract(){
   do{
-  unsigned char buf[8] = {0,0,0,0,0,0,0,0};
+  unsigned char buf[8] = {150,0,0,0,0,0,0,0};
   CAN.sendMsgBuf(0x520, 0, 8, buf);
   lcd.print(buf[0]);
   lcd.setCursor(0,3);
   lcd.print("Length: 0in    ");
   } while (digitalRead(btn) == HIGH);
-  return;
 }
 
 void doDemo(){
   do{
-    unsigned char buf[8] = {255,0,0,0,0,0,0,0};
+    unsigned char buf[8] = {27,0,0,0,0,0,0,0};
     Serial.print(buf[0]);
     CAN.sendMsgBuf(0x520, 0, 8, buf);
     lcd.setCursor(0,3);
@@ -155,7 +157,7 @@ void doDemo(){
       return;
     }
     delay(3000);
-    unsigned char buf_2[8] = {0,0,0,0,0,0,0,0};
+    unsigned char buf_2[8] = {150,0,0,0,0,0,0,0};
     CAN.sendMsgBuf(0x520, 0, 8, buf_2);
     lcd.print(buf[0]);
     lcd.setCursor(0,3);
@@ -166,7 +168,6 @@ void doDemo(){
     delay(3000);
   }while(digitalRead(btn) == HIGH);
   home();
-  return;
 }
 
 void home(){
@@ -176,5 +177,4 @@ void home(){
   lcd.setCursor(0,3);
   lcd.print("Homing Actuator    ");
   }while(digitalRead(btn) == HIGH);
-  return;
 }
